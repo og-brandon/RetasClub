@@ -276,7 +276,7 @@ function MapaScreen({ route, navigation }) {
                 let i;
                 for (i = 0; i < places.length; i++) {
                     postsArray.push(
-                        <Marker
+                        <Marker key={i}
                             coordinate={{
                                 latitude: places[i].coordinate.latitude,
                                 longitude: places[i].coordinate.longitude,
@@ -681,7 +681,7 @@ function MapaMain({ route, navigation }) {
                 if (year <= posts[uid].anio && month <= posts[uid].mes && date <= posts[uid].dia) {
                     currentPost = posts[uid]
                     postsArray.push(
-                        <Marker
+                        <Marker key={uid}
                             coordinate={{
                                 latitude: posts[uid].location.latitude,
                                 longitude: posts[uid].location.longitude,
@@ -1297,7 +1297,7 @@ export default function HomeScreen(route, navigation) {
         language: languageObject
     }
     return (
-        <Drawer.Navigator initialRouteName="MapaMain" drawerType="slide" drawerContent={props => <DrawerContent {...props} routes={object} />}>
+        <Drawer.Navigator initialRouteName="Perfil" drawerType="slide" drawerContent={props => <DrawerContent {...props} routes={object} />}>
             <Drawer.Screen name="Añadir reta" component={AddPartidaScreen} initialParams={{ user, language: languageObject }} />
             <Drawer.Screen name="ParqueView" component={ParqueView} initialParams={{ user: user, location: location, language: languageObject }} />
             <Drawer.Screen name="Mapa" component={MapaScreen} initialParams={{ user: user, location: location, language: languageObject }} />

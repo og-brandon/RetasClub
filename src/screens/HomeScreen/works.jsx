@@ -32,8 +32,8 @@ import { Card } from 'react-native-elements';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Updates from 'expo-updates';
+import * as Localization from 'expo-localization';
+import i18n from 'i18n-js';
 
 const googleAPIKey = 'AIzaSyC7kwR1SH6Gr9hZJd0Mg-Z7QWNuTWwByyQ'
 // const initLat = 25.724301;
@@ -102,8 +102,7 @@ const stylesDrawer = StyleSheet.create({
 });
 
 function DrawerContent(props, route) {
-    let language = props.routes.language
-    let user = props.routes.user
+    let user = props.routes
     const [image, setImage] = useState((Image.resolveAssetSource(require('../../../assets/soccer-player.png')).uri))
 
     useEffect(() => {
@@ -145,7 +144,7 @@ function DrawerContent(props, route) {
                         </View> */}
                     </View>
 
-                    <Drawer2.Drawer.Section title={language.drawerLABELRetas} style={stylesDrawer.drawerSection}>
+                    <Drawer2.Drawer.Section title="Retas" style={stylesDrawer.drawerSection}>
                         <DrawerItem
                             icon={({ color, size }) => (
                                 <Icon
@@ -154,7 +153,7 @@ function DrawerContent(props, route) {
                                     size={size}
                                 />
                             )}
-                            label={language.drawerTABanadir}
+                            label="Añadir reta"
                             onPress={() => { props.navigation.navigate('Añadir reta') }}
                         />
                         <DrawerItem
@@ -165,7 +164,7 @@ function DrawerContent(props, route) {
                                     size={size}
                                 />
                             )}
-                            label={language.drawerTABpartidos}
+                            label="Partidos"
                             onPress={() => { props.navigation.navigate('Partidos') }}
                         />
                         <DrawerItem
@@ -176,7 +175,7 @@ function DrawerContent(props, route) {
                                     size={size}
                                 />
                             )}
-                            label={language.drawerTABtuspartidos}
+                            label="Tus Partidos"
                             onPress={() => { props.navigation.navigate('TusPartidos') }}
                         />
                         <DrawerItem
@@ -187,11 +186,11 @@ function DrawerContent(props, route) {
                                     size={size}
                                 />
                             )}
-                            label={language.drawerTABMapa}
+                            label="Mapa"
                             onPress={() => { props.navigation.navigate('MapaMain') }}
                         />
                     </Drawer2.Drawer.Section>
-                    <Drawer2.Drawer.Section title={language.drawerLABELUsuario}>
+                    <Drawer2.Drawer.Section title="Usuario">
                         <DrawerItem
                             icon={({ color, size }) => (
                                 <Icon
@@ -200,7 +199,7 @@ function DrawerContent(props, route) {
                                     size={size}
                                 />
                             )}
-                            label={language.drawerTABPerfil}
+                            label="Perfil"
                             onPress={() => { props.navigation.navigate('Perfil') }}
                         />
                     </Drawer2.Drawer.Section>
@@ -215,11 +214,11 @@ function DrawerContent(props, route) {
                             size={size}
                         />
                     )}
-                    label={language.drawerTABCerrarS}
+                    label="Cerrar sesion"
                     onPress={() => firebase.auth().signOut().then(function () {
                         props.navigation.toggleDrawer()
                         props.navigation.navigate('Login')
-                        ToastAndroid.show(language.drawerTOASTCerrar, ToastAndroid.LONG)
+                        ToastAndroid.show("Se ha cerrado la sesión", ToastAndroid.LONG)
                     }).catch(function (error) {
                         Alert.alert(error)
                     })}
@@ -230,7 +229,6 @@ function DrawerContent(props, route) {
 }
 
 function MapaScreen({ route, navigation }) {
-    let language = route.params.language
     const location = route.params.location
 
     const [region, setRegion] = useState({
@@ -241,7 +239,7 @@ function MapaScreen({ route, navigation }) {
     });
 
     const url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + region.latitude + ',' + region.longitude + '&radius=' + radius + '&keyword=soccerfield' + '&key=' + googleAPIKey
-    console.log(url)
+
     const [ViewsCanchas, setViewsCanchas] = useState([]);
 
     function actualizarCanchas() {
@@ -251,7 +249,6 @@ function MapaScreen({ route, navigation }) {
         fetch(url)
             .then(res => {
                 return res.json();
-                
             })
             .then(res => {
                 for (let googlePlace of res.results) {
@@ -281,9 +278,10 @@ function MapaScreen({ route, navigation }) {
                                 latitude: places[i].coordinate.latitude,
                                 longitude: places[i].coordinate.longitude,
                             }}
+                            image={require('../../../assets/soccer-pin.png')}
                             onCalloutPress={(e) => navigation.navigate('Añadir reta', { markerLocation: e.nativeEvent.coordinate })}
                             title={places[i].placeName}
-                            description={language.canchadefutbol}
+                            description="Cancha de futbol"
                         />
                     )
                 }
@@ -313,7 +311,7 @@ function MapaScreen({ route, navigation }) {
                 <TouchableOpacity
                     style={styles.actualizarButton}
                     onPress={() => actualizarCanchas()}>
-                    <Text style={styles.buttonTitle}>   {language.actualizar}  </Text>
+                    <Text style={styles.buttonTitle}>   Actualizar   </Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -361,32 +359,17 @@ async function uploadImageAsync(uri) {
 }
 
 function PerfilScreen({ route, navigation }) {
-    let language = route.params.language
     let user = route.params.user
     const [image, setImage] = useState((Image.resolveAssetSource(require('../../../assets/soccer-player.png')).uri))
     let [uploading, setUploading] = useState(false);
     const [image_url, setimage_url] = useState(null)
-
-    async function restartAndChangeLanguage() {
-        if (language == 'es') {
-            await AsyncStorage.setItem('@languageSet', 'en')
-            Alert.alert("App is going to restart")
-            Updates.reloadAsync()
-            return
-        }
-        if (language == 'en') {
-            await AsyncStorage.setItem('@languageSet', 'es')
-            Alert.alert("La aplicacion se va a reiniciar")
-            Updates.reloadAsync()
-        }
-    }
 
     useEffect(() => {
         (async () => {
             if (Platform.OS !== 'web') {
                 const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
                 if (status !== 'granted') {
-                    alert(language.perfil_permisoscamara);
+                    alert('Se necesitan permisos de camara!');
                 }
             }
         })();
@@ -445,7 +428,7 @@ function PerfilScreen({ route, navigation }) {
                 style={{ flex: 1, width: '100%' }}
                 keyboardShouldPersistTaps="always">
                 {image && <Image source={{ uri: image }} style={styles.logo} />}
-                <Text onPress={_pickImage} style={styles.footerLink}> {<Feather name="edit" size={24} color="black" />}{language.perfil_changepicture}</Text>
+                <Text onPress={_pickImage} style={styles.footerLink}> {<Feather name="edit" size={24} color="black" />}Editar Imagen</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
                     <View>
@@ -461,15 +444,23 @@ function PerfilScreen({ route, navigation }) {
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
                 </View>
+
+                <Text style={styles.footerLink2}>Cambiar idioma</Text>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
+                </View>
+
                 <TouchableOpacity
                     style={styles.button}
+                    title="Cerrar sesión"
                     onPress={() => firebase.auth().signOut().then(function () {
                         navigation.navigate('Login')
-                        ToastAndroid.show(language.drawerTOASTCerrar, ToastAndroid.LONG)
+                        ToastAndroid.show("Se ha cerrado la sesión", ToastAndroid.LONG)
                     }).catch(function (error) {
                         Alert.alert(error)
                     })}>
-                    <Text style={styles.buttonTitle}>{language.drawerTABCerrarS}</Text>
+                    <Text style={styles.buttonTitle}>Cerrar sesión</Text>
                 </TouchableOpacity>
             </KeyboardAwareScrollView>
         </View>
@@ -477,7 +468,6 @@ function PerfilScreen({ route, navigation }) {
 }
 
 function AddPartidaScreen({ route, navigation }) {
-    let language = route.params.language
     let user = route.params.user
     let useruid = route.params.user.uid
     const [titulo, setTitulo] = useState(null)
@@ -527,7 +517,7 @@ function AddPartidaScreen({ route, navigation }) {
     const showTimepicker = () => {
         showMode('time');
     };
-    
+
     function storePartido(useruid, titulo, descripcion) {
         // if(titulo || descripcion == null){
         //     alert("Eliga un titulo o descripcion")
@@ -535,7 +525,7 @@ function AddPartidaScreen({ route, navigation }) {
         // }
 
         if (route.params.markerLocation == undefined) {
-            Alert.alert(language.addlocationplease);
+            Alert.alert('Eliga una locacion.');
             return
         }
 
@@ -590,10 +580,10 @@ function AddPartidaScreen({ route, navigation }) {
             usuariosDisplayName: [user.displayName]
         });
 
-        ToastAndroid.show(language.partidoadded, ToastAndroid.LONG)
+        ToastAndroid.show("Se ha registrado el partido!", ToastAndroid.LONG)
         navigation.navigate("Partidos")
     }
-    
+
     return (
         <View style={styles.container}>
             <KeyboardAwareScrollView
@@ -605,7 +595,7 @@ function AddPartidaScreen({ route, navigation }) {
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder={language.addtitulo}
+                    placeholder='Añadir titulo'
                     placeholderTextColor="#aaaaaa"
                     onChangeText={(text) => setTitulo(text)}
                     value={titulo}
@@ -614,7 +604,7 @@ function AddPartidaScreen({ route, navigation }) {
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder={language.adddescription}
+                    placeholder='Añadir descripcion'
                     placeholderTextColor="#aaaaaa"
                     onChangeText={(text) => setDescripcion(text)}
                     value={descripcion}
@@ -625,14 +615,14 @@ function AddPartidaScreen({ route, navigation }) {
                     <TouchableOpacity
                         style={styles.buttonFecha}
                         onPress={showDatepicker}>
-                        <Text style={styles.buttonTitle}>{language.selectFecha}</Text>
+                        <Text style={styles.buttonTitle}>Elegir Fecha</Text>
                     </TouchableOpacity>
                 </View>
                 <View>
                     <TouchableOpacity
                         style={styles.buttonHora}
                         onPress={showTimepicker}>
-                        <Text style={styles.buttonTitle}>{language.selectHora}</Text>
+                        <Text style={styles.buttonTitle}>Elegir Hora</Text>
                     </TouchableOpacity>
                 </View>
                 {show && (
@@ -650,12 +640,12 @@ function AddPartidaScreen({ route, navigation }) {
                     style={styles.buttonUbicacion}
                     onPress={() => navigation.navigate('Mapa')}
                 >
-                    <Text style={styles.buttonTitle}>{language.selectUbicacion}</Text>
+                    <Text style={styles.buttonTitle}>Elegir Ubicacion</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.button3}
                     onPress={() => storePartido(useruid, titulo, descripcion, dia, mes, anio, hora, minutos)}>
-                    <Text style={styles.buttonTitle}>{language.addPartido}</Text>
+                    <Text style={styles.buttonTitle}>Añadir partido</Text>
                 </TouchableOpacity>
             </KeyboardAwareScrollView>
         </View>
@@ -665,7 +655,6 @@ function AddPartidaScreen({ route, navigation }) {
 
 
 function MapaMain({ route, navigation }) {
-    let language = route.params.language
     let location = route.params.location.coords
     const [postsMarkers, setpostsMarkers] = useState([]);
 
@@ -686,9 +675,12 @@ function MapaMain({ route, navigation }) {
                                 latitude: posts[uid].location.latitude,
                                 longitude: posts[uid].location.longitude,
                             }}
-                            description={language.canchadefutbol}
+                            image={require('../../../assets/soccer-pin.png')}
+                            description={posts[uid].descripcion}
                             onCalloutPress={() => { navigation.navigate('ParqueView', [posts[uid]]) }}
+                            style={{ width: 15, height: 15 }}
                             title={posts[uid].titulo}
+                            resizeMode="contain"
                         ></Marker>
                     )
                 }
@@ -720,44 +712,48 @@ function MapaMain({ route, navigation }) {
 }
 
 function ParqueView({ route, navigation }) {
-    let language = route.params.language
     const [fposts, setFposts] = useState([]);
     const post = route.params[0].location
     const latitude = post.latitude
     const longitude = post.longitude
-
-    let date = new Date().getDate()//Current Date
-    var month = new Date().getMonth(); //Current Month
-    var year = new Date().getFullYear(); //Current Year
 
     useEffect(() => {
         const fire = firebase.database().ref('partidos').on('value', (snapshot) => {
             let posts = snapshot.val()
             let postsArray = [];
 
+            viewDisplayNames = []
             for (const uid in posts) {
-                console.log(posts[uid].anio, posts[uid].month, posts[uid].dia)
-                if (year <= posts[uid].anio && month <= posts[uid].mes && date <= posts[uid].dia) {
+                if (posts[uid].location.latitude == latitude && posts[uid].location.longitude == longitude) {
                     currentPost = posts[uid]
+                    console.log(posts[uid].usuariosDisplayName)
+                    for (const i in posts[uid].usuariosDisplayName) {
+                        viewDisplayNames.push(
+                            <Text>{posts[uid].usuariosDisplayName[i]}</Text>
+                        )
+                    }
                     postsArray.push(
                         <Card containerStyle={{ width: Dimensions.get('window').width - 35 }}>
                             <Card.Title>{posts[uid].titulo}</Card.Title>
                             <Card.Divider />
-                            <Card.Title>{language.descripcion}</Card.Title>
+                            <Card.Title>Descripcion</Card.Title>
                             <Text style={{ alignItems: 'center', marginBottom: 10 }}>
                                 {posts[uid].descripcion}
                             </Text>
 
                             <Card.Divider />
-                            <Text style={styles.footerText2}>{language.retade} <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts[uid].usuarioDisplayName} </Text>
-                            <Card.Divider />
+                            <Card.Title>Integrantes</Card.Title>
+                            {viewDisplayNames}
                             <TouchableOpacity
                                 style={styles.button2}
                                 onPress={() => { navigation.navigate('Reta', [posts[uid]]) }}>
-                                <Text style={styles.buttonTitle}>{language.reta}</Text>
+                                <Text style={styles.buttonTitle}>Ver Reta</Text>
                             </TouchableOpacity>
                         </Card>
                     )
+                }
+                else {
+                    continue;
                 }
             }
 
@@ -770,7 +766,7 @@ function ParqueView({ route, navigation }) {
     return (
         <SafeAreaView style={styles.containerCard}>
             <View style={styles.container2}>
-                <Text style={styles.cardTitle2}>{language.parque}</Text>
+                <Text style={styles.cardTitle2}>Partidos en este parque:</Text>
                 <KeyboardAwareScrollView
                     style={{ flex: 1, width: '100%' }}
                     keyboardShouldPersistTaps="always">{fposts}
@@ -783,7 +779,6 @@ function ParqueView({ route, navigation }) {
 
 
 function retaScreen({ route, navigation }) {
-    let language = route.params.language
     const user = route.params.user
     const post = route.params[0]
 
@@ -803,7 +798,7 @@ function retaScreen({ route, navigation }) {
             usuariosUID.forEach(checarUID)
 
             if (isUser == true) {
-                ToastAndroid.show(language.yaestaunido, ToastAndroid.LONG)
+                ToastAndroid.show("Ya esta unido a este partido", ToastAndroid.LONG)
                 return
             }
 
@@ -904,15 +899,15 @@ function retaScreen({ route, navigation }) {
                 keyboardShouldPersistTaps="always">
                 <Text style={styles.cardTitle}>{post.titulo}</Text>
                 {/* <Image source={{ uri: post.image_location }} style={styles.logoAnimal} /> */}
-                <Text style={styles.textImage2}><MaterialIcons name="date-range" size={24} color="black" /> {language.date} {post.dia + "/" + (parseInt(post.mes, 10) + 1) + "/" + post.anio}</Text>
-                <Text style={styles.textImage2}><Ionicons name="md-time" size={24} color="black" /> {language.time} {post.hora + ":" + post.minutos}</Text>
-                <Text style={styles.textImage2}><FontAwesome5 style={styles.footerText2} name="user-circle" size={24} color="black" /> {language.retade} {post.usuarioDisplayName}</Text>
+                <Text style={styles.textImage2}><MaterialIcons name="date-range" size={24} color="black" /> Fecha: {post.dia + "/" + (parseInt(post.mes, 10) + 1) + "/" + post.anio}</Text>
+                <Text style={styles.textImage2}><Ionicons name="md-time" size={24} color="black" /> Hora: {post.hora + ":" + post.minutos}</Text>
+                <Text style={styles.textImage2}><FontAwesome5 style={styles.footerText2} name="user-circle" size={24} color="black" /> Reta creada por: {post.usuarioDisplayName}</Text>
                 {/* <Text style={styles.textImage2}><MaterialIcons name="location-on" size={20} color="black" /> Monterrey, Nuevo Leon </Text> */}
-                <Text style={styles.cardTitleDescripcion}>{language.descripcion}:</Text>
+                <Text style={styles.cardTitleDescripcion}>Descripcion:</Text>
                 <Card >
                     <Text>{post.descripcion}</Text>
                 </Card>
-                <Text style={styles.cardTitleDescripcion}>{language.usuarios}</Text>
+                <Text style={styles.cardTitleDescripcion}>Usuarios:</Text>
                 <Card >
                     {usuariosDisplayAll()}
                 </Card>
@@ -922,8 +917,7 @@ function retaScreen({ route, navigation }) {
     )
 }
 
-function PartidosScreen({ route, navigation }) {
-    let language = route.params.language
+function PartidosScreen({ navigation }) {
     const [fposts, setFposts] = useState([]);
     let date = new Date().getDate()//Current Date
     var month = new Date().getMonth(); //Current Month
@@ -935,6 +929,7 @@ function PartidosScreen({ route, navigation }) {
             let posts = snapshot.val()
             let postsArray = [];
 
+            viewDisplayNames = []
             for (const uid in posts) {
                 console.log(posts[uid].anio, posts[uid].month, posts[uid].dia)
                 if (year <= posts[uid].anio && month <= posts[uid].mes && date <= posts[uid].dia) {
@@ -943,18 +938,18 @@ function PartidosScreen({ route, navigation }) {
                         <Card containerStyle={{ width: Dimensions.get('window').width - 35 }}>
                             <Card.Title>{posts[uid].titulo}</Card.Title>
                             <Card.Divider />
-                            <Card.Title>{language.descripcion}</Card.Title>
+                            <Card.Title>Descripcion</Card.Title>
                             <Text style={{ alignItems: 'center', marginBottom: 10 }}>
                                 {posts[uid].descripcion}
                             </Text>
 
                             <Card.Divider />
-                            <Text style={styles.footerText2}>{language.retade} <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts[uid].usuarioDisplayName} </Text>
+                            <Text style={styles.footerText2}>Reta de: <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts[uid].usuarioDisplayName} </Text>
                             <Card.Divider />
                             <TouchableOpacity
                                 style={styles.button2}
                                 onPress={() => { navigation.navigate('Reta', [posts[uid]]) }}>
-                                <Text style={styles.buttonTitle}>{language.reta}</Text>
+                                <Text style={styles.buttonTitle}>Ver Reta</Text>
                             </TouchableOpacity>
                         </Card>
                     )
@@ -981,7 +976,6 @@ function PartidosScreen({ route, navigation }) {
 }
 
 function TusPartidos({ route, navigation }) {
-    let language = route.params.language
     const user = route.params.user
     const [fposts, setFposts] = useState([]);
 
@@ -1005,12 +999,12 @@ function TusPartidos({ route, navigation }) {
 
                             </Text>
                             <Card.Divider />
-                            <Text style={styles.footerText2}>{language.retade} <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts[uid].usuarioDisplayName} </Text>
+                            <Text style={styles.footerText2}>Reta de: <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts[uid].usuarioDisplayName} </Text>
                             <Card.Divider />
                             <TouchableOpacity
                                 style={styles.button2}
                                 onPress={() => { navigation.navigate('TusPartidosView', [posts[uid]]) }}>
-                                <Text style={styles.buttonTitle}>{language.reta}</Text>
+                                <Text style={styles.buttonTitle}>Ver Reta</Text>
                             </TouchableOpacity>
                         </Card>
                     )
@@ -1028,12 +1022,12 @@ function TusPartidos({ route, navigation }) {
 
                         </Text>
                         <Card.Divider />
-                        <Text style={styles.footerText2}>{language.retade} <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts[uid].usuarioDisplayName} </Text>
+                        <Text style={styles.footerText2}>Reta de: <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts[uid].usuarioDisplayName} </Text>
                         <Card.Divider />
                         <TouchableOpacity
                             style={styles.buttonFade}
                             onPress={() => { navigation.navigate('RetaDone', [posts[uid]]) }}>
-                            <Text style={styles.buttonTitle}>{language.reta}</Text>
+                            <Text style={styles.buttonTitle}>Ver Reta</Text>
                         </TouchableOpacity>
                     </Card>
                 )
@@ -1053,12 +1047,12 @@ function TusPartidos({ route, navigation }) {
 
                                 </Text>
                                 <Card.Divider />
-                                <Text style={styles.footerText2}>{language.retade} <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts2[uid].usuarioDisplayName} </Text>
+                                <Text style={styles.footerText2}>Reta de: <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts2[uid].usuarioDisplayName} </Text>
                                 <Card.Divider />
                                 <TouchableOpacity
                                     style={styles.button2}
                                     onPress={() => { navigation.navigate('Reta', [posts2[uid]]) }}>
-                                    <Text style={styles.buttonTitle}>{language.reta}</Text>
+                                    <Text style={styles.buttonTitle}>Ver Reta</Text>
                                 </TouchableOpacity>
                             </Card>
                         )
@@ -1076,12 +1070,12 @@ function TusPartidos({ route, navigation }) {
 
                             </Text>
                             <Card.Divider />
-                            <Text style={styles.footerText2}>{language.retade} <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts2[uid].usuarioDisplayName} </Text>
+                            <Text style={styles.footerText2}>Reta de: <FontAwesome5 style={styles.footerText2} name="user-circle" size={15} color="black" /> {posts2[uid].usuarioDisplayName} </Text>
                             <Card.Divider />
                             <TouchableOpacity
                                 style={styles.buttonFade}
                                 onPress={() => { navigation.navigate('RetaDone', [posts2[uid]]) }}>
-                                <Text style={styles.buttonTitle}>{language.reta}</Text>
+                                <Text style={styles.buttonTitle}>Ver Reta</Text>
                             </TouchableOpacity>
                         </Card>
                     )
@@ -1113,7 +1107,6 @@ function TusPartidos({ route, navigation }) {
 }
 
 function TusPartidosView({ route, navigation }) {
-    let language = route.params.language
     const post = route.params[0]
 
     function removerPost() {
@@ -1124,7 +1117,7 @@ function TusPartidosView({ route, navigation }) {
         }
         firebase.database().ref("users/" + post.usuario + "/" + "partidos/" + post.postId).remove()
         firebase.database().ref("partidos/" + post.postId).remove()
-        ToastAndroid.show(language.TOASTborrarpartido, ToastAndroid.LONG)
+        ToastAndroid.show("Se ha removido el partido", ToastAndroid.LONG)
         navigation.navigate("TusPartidos")
 
     }
@@ -1146,22 +1139,22 @@ function TusPartidosView({ route, navigation }) {
                 keyboardShouldPersistTaps="always">
                 <Text style={styles.cardTitle}>{post.titulo}</Text>
                 {/* <Image source={{ uri: post.image_location }} style={styles.logoAnimal} /> */}
-                <Text style={styles.textImage2}><MaterialIcons name="date-range" size={24} color="black" /> {language.date} {post.dia + "/" + (parseInt(post.mes, 10) + 1) + "/" + post.anio}</Text>
-                <Text style={styles.textImage2}><Ionicons name="md-time" size={24} color="black" /> {language.time} {post.hora + ":" + post.minutos}</Text>
-                <Text style={styles.textImage2}><FontAwesome5 style={styles.footerText2} name="user-circle" size={24} color="black" /> {language.retade} {post.usuarioDisplayName}</Text>
+                <Text style={styles.textImage2}><MaterialIcons name="date-range" size={24} color="black" /> Fecha: {post.dia + "/" + (parseInt(post.mes, 10) + 1) + "/" + post.anio}</Text>
+                <Text style={styles.textImage2}><Ionicons name="md-time" size={24} color="black" /> Hora: {post.hora + ":" + post.minutos}</Text>
+                <Text style={styles.textImage2}><FontAwesome5 style={styles.footerText2} name="user-circle" size={24} color="black" /> Reta creada por: {post.usuarioDisplayName}</Text>
                 {/* <Text style={styles.textImage2}><MaterialIcons name="location-on" size={20} color="black" /> Monterrey, Nuevo Leon </Text> */}
-                <Text style={styles.cardTitleDescripcion}>{language.descripcion}:</Text>
+                <Text style={styles.cardTitleDescripcion}>Descripcion:</Text>
                 <Card >
                     <Text>{post.descripcion}</Text>
                 </Card>
-                <Text style={styles.cardTitleDescripcion}>{language.usuarios}</Text>
+                <Text style={styles.cardTitleDescripcion}>Usuarios:</Text>
                 <Card >
                     {usuariosDisplayAll()}
                 </Card>
                 <TouchableOpacity
                     style={styles.button2}
                     onPress={() => removerPost()}>
-                    <Text style={styles.buttonTitle}>{language.borrarpartido}</Text>
+                    <Text style={styles.buttonTitle}>Remover</Text>
                 </TouchableOpacity>
             </KeyboardAwareScrollView>
         </View>
@@ -1169,7 +1162,6 @@ function TusPartidosView({ route, navigation }) {
 }
 
 function retaScreenDone({ route, navigation }) {
-    let language = route.params.language
     const post = route.params[0]
 
     function usuariosDisplayAll() {
@@ -1189,17 +1181,17 @@ function retaScreenDone({ route, navigation }) {
                 keyboardShouldPersistTaps="always">
                 <Text style={styles.cardTitle}>{post.titulo}</Text>
                 {/* <Image source={{ uri: post.image_location }} style={styles.logoAnimal} /> */}
-                <Text style={styles.textImage2}><MaterialIcons name="date-range" size={24} color="black" /> {language.date} {post.dia + "/" + (parseInt(post.mes, 10) + 1) + "/" + post.anio}</Text>
-                <Text style={styles.textImage2}><Ionicons name="md-time" size={24} color="black" /> {language.time} {post.hora + ":" + post.minutos}</Text>
-                <Text style={styles.textImage2}><FontAwesome5 style={styles.footerText2} name="user-circle" size={24} color="black" /> {language.retade}: {post.usuarioDisplayName}</Text>
+                <Text style={styles.textImage2}><MaterialIcons name="date-range" size={24} color="black" /> Fecha: {post.dia + "/" + (parseInt(post.mes, 10) + 1) + "/" + post.anio}</Text>
+                <Text style={styles.textImage2}><Ionicons name="md-time" size={24} color="black" /> Hora: {post.hora + ":" + post.minutos}</Text>
+                <Text style={styles.textImage2}><FontAwesome5 style={styles.footerText2} name="user-circle" size={24} color="black" /> Reta creada por: {post.usuarioDisplayName}</Text>
                 {/* <Text style={styles.textImage2}><MaterialIcons name="location-on" size={20} color="black" /> Monterrey, Nuevo Leon </Text> */}
 
-                <Text style={styles.cardTitleDone}>{language.fueradefecha}</Text>
-                <Text style={styles.cardTitleDescripcion}>{language.descripcion}:</Text>
+                <Text style={styles.cardTitleDone}>Fuera de fecha</Text>
+                <Text style={styles.cardTitleDescripcion}>Descripcion:</Text>
                 <Card >
                     <Text>{post.descripcion}</Text>
                 </Card>
-                <Text style={styles.cardTitleDescripcion}>{language.usuarios}</Text>
+                <Text style={styles.cardTitleDescripcion}>Usuarios:</Text>
                 <Card >
                     {usuariosDisplayAll()}
                 </Card>
@@ -1213,101 +1205,19 @@ const Drawer = createDrawerNavigator();
 export default function HomeScreen(route, navigation) {
     const user = route.route.params.user
     const location = route.route.params.location
-    let language = route.route.params.language
-    let languageObject = {}
-
-    let languageDictES = {
-        parque: "Partidos en este parque:",
-        descripcion: "Descripcion",
-        reta: "Ver reta",
-        retade: "Reta de:",
-        drawerLABELRetas: "Retas",
-        drawerTABanadir: "Añadir reta",
-        drawerTABpartidos: "Partidos",
-        drawerTABtuspartidos: "Tus Partidos",
-        drawerTABMapa: "Mapa",
-        drawerLABELUsuario: "Usuario",
-        drawerTABPerfil: "Perfil",
-        drawerTABCerrarS: "Cerrar Sesion",
-        drawerTOASTCerrar: "Se ha cerrado la sesión",
-        perfil_permisoscamara: 'Se necesitan permisos de camara!',
-        perfil_changepicture: 'Editar imagen',
-        date: 'Fecha:',
-        time: "Hora:",
-        usuarios: "Usuarios",
-        borrarpartido: "Borrar partido",
-        TOASTborrarpartido: "Se ha borrado el partido",
-        fueradefecha: "Fuera de fecha",
-        yaestaunido: "Ya esta unido a este partido!",
-        addtitulo: "Añadir titulo",
-        adddescription: "Añadir descripcion",
-        selectFecha: "Elegir fecha",
-        selectHora: "Elegir hora",
-        selectUbicacion: "Elegir ubicacion",
-        addPartido: "Añadir partido",
-        partidoadded: "Se añadio el partido!",
-        addlocationplease: "Porfavor, añade una ubicacion de cancha",
-        actualizar: "Actualizar",
-        canchadefutbol: "Cancha de futbol",
-    }
-
-    let languageDictEN = {
-        parque: "Matches in this park:",
-        descripcion: "Description",
-        reta: "See match",
-        retade: "Match by:",
-        drawerLABELRetas: "Matches",
-        drawerTABanadir: "Add match",
-        drawerTABpartidos: "Matches",
-        drawerTABtuspartidos: "Your matches",
-        drawerTABMapa: "Map",
-        drawerLABELUsuario: "User",
-        drawerTABPerfil: "Profile",
-        drawerTABCerrarS: "Log out",
-        drawerTOASTCerrar: "You have logged out",
-        perfil_permisoscamara: 'Please enable camera services',
-        perfil_changepicture: 'Edit picture',
-        date: 'Date:',
-        time: "Time:",
-        usuarios: "Users",
-        borrarpartido: "Delete match",
-        TOASTborrarpartido: "Match has been deleted",
-        fueradefecha: "Match expired",
-        yaestaunido: "Just joined the match!",
-        addtitulo: "Add title",
-        adddescription: "Add description",
-        selectFecha: "Select date",
-        selectHora: "Select time",
-        selectUbicacion: "Select location",
-        addPartido: "Add match",
-        partidoadded: "Match added!",
-        addlocationplease: "Please add a park location",
-        actualizar: "Refresh",
-        canchadefutbol: "Soccer park",
-    }
-
-    if (language == "es") {
-        languageObject = languageDictES
-    } else {
-        languageObject = languageDictEN
-    }
-
-    const object = {
-        user: user,
-        language: languageObject
-    }
+    const language = route.route.params.language
     return (
-        <Drawer.Navigator initialRouteName="MapaMain" drawerType="slide" drawerContent={props => <DrawerContent {...props} routes={object} />}>
-            <Drawer.Screen name="Añadir reta" component={AddPartidaScreen} initialParams={{ user, language: languageObject }} />
-            <Drawer.Screen name="ParqueView" component={ParqueView} initialParams={{ user: user, location: location, language: languageObject }} />
-            <Drawer.Screen name="Mapa" component={MapaScreen} initialParams={{ user: user, location: location, language: languageObject }} />
-            <Drawer.Screen name="MapaMain" component={MapaMain} initialParams={{ user: user, location: location, language: languageObject }} />
-            <Drawer.Screen name="Perfil" component={PerfilScreen} initialParams={{ user, language: languageObject }} />
-            <Drawer.Screen name="Partidos" component={PartidosScreen} initialParams={{ user, language: languageObject }} />
-            <Drawer.Screen name="TusPartidos" component={TusPartidos} initialParams={{ user, language: languageObject }} />
-            <Drawer.Screen name="TusPartidosView" component={TusPartidosView} initialParams={{ language: languageObject }} />
-            <Drawer.Screen name="Reta" component={retaScreen} initialParams={{ user, language: languageObject }} />
-            <Drawer.Screen name="RetaDone" component={retaScreenDone} initialParams={{ user, language: languageObject }} />
+        <Drawer.Navigator initialRouteName="MapaMain" drawerType="slide" drawerContent={props => <DrawerContent {...props} routes={user, language} />}>
+            <Drawer.Screen name="Añadir reta" component={AddPartidaScreen} initialParams={{ user, language: language }} />
+            <Drawer.Screen name="ParqueView" component={ParqueView} initialParams={{ user: user, location: location, language: language }} />
+            <Drawer.Screen name="Mapa" component={MapaScreen} initialParams={{ user: user, location: location, language: language }} />
+            <Drawer.Screen name="MapaMain" component={MapaMain} initialParams={{ user: user, location: location, language: language }} />
+            <Drawer.Screen name="Perfil" component={PerfilScreen} initialParams={{ user, language: language }} />
+            <Drawer.Screen name="Partidos" component={PartidosScreen} initialParams={{ user, language: language }} />
+            <Drawer.Screen name="TusPartidos" component={TusPartidos} initialParams={{ user, language: language }} />
+            <Drawer.Screen name="TusPartidosView" component={TusPartidosView} initialParams={{ language: language }} />
+            <Drawer.Screen name="Reta" component={retaScreen} initialParams={{ user, language: language }} />
+            <Drawer.Screen name="RetaDone" component={retaScreenDone} initialParams={{ user, language: language }} />
         </Drawer.Navigator>
     );
 }

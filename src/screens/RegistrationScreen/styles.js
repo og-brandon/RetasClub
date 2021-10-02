@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
     container: {
+        marginTop: 30,
         flex: 1,
         alignItems: 'center'
     },
@@ -48,7 +49,8 @@ export default StyleSheet.create({
     },
     footerText: {
         fontSize: 16,
-        color: '#2e2e2d'
+        color: '#2e2e2d',
+        marginBottom: 40
     },
     footerLink: {
         color: "#788eec",

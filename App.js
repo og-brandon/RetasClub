@@ -4,12 +4,15 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { LoginScreen, HomeScreen, RegistrationScreen } from './src/screens'
 import {decode, encode} from 'base-64'
+import i18n from 'i18n-js';
 if (!global.btoa) {  global.btoa = encode }
 if (!global.atob) { global.atob = decode }
 
 const Stack = createStackNavigator();
 
 export default function App() {
+
+  i18n.locale = 'es'
 
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState(null)
