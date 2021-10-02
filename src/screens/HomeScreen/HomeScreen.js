@@ -35,7 +35,7 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
 
-const googleAPIKey = 'AIzaSyC7kwR1SH6Gr9hZJd0Mg-Z7QWNuTWwByyQ'
+const googleAPIKey = '...'
 // const initLat = 25.724301;
 // const initLon = -100.313123;
 let radius = 4 * 1000;
