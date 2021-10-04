@@ -7,7 +7,7 @@ RetasClub is a react native app made for [Ingenieria de dispositivos moviles –
 The goal was to hava a mobile app where users can register and (through Google's map search API) play in groups in local soccer parks. It was developed in React Native through the Expo Platform and uses Google's Firebase as a database.
 
 
-If you want to check the paper, which is  recommended for usage, download it [here](https://github.com/BrandonZoft/RetasClub/raw/main/Paper.pdf).
+If you want to check the paper, which is  recommended for usage, download it [here](https://github.com/og-brandon/RetasClub/raw/main/Paper.pdf).
 
 ---
 
